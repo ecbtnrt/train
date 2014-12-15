@@ -44,7 +44,40 @@ undefined:
 https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&
 
 
+https://kyfw.12306.cn/otn/passcodeNew/getPassCodeNew?module=passenger&rand=randp&0.9170868629589677
 
+https://kyfw.12306.cn/otn/passcodeNew/checkRandCodeAnsyn
+randCode:vkks
+rand:randp
+_json_att:
+REPEAT_SUBMIT_TOKEN:489915458494510c9343d9e787bd53d0
+
+https://kyfw.12306.cn/otn/confirmPassenger/checkOrderInfo
+cancel_flag:2
+bed_level_order_num:000000000000000000000000000000
+passengerTicketStr:3,0,1,xx,1,xxxx,mmmm,N
+oldPassengerStr:xx,1,xxxx,1_
+tour_flag:dc
+randCode:vkks
+NjA2MTYz:YjUwZTFhZDA5OGMwOTRjOA==
+_json_att:
+REPEAT_SUBMIT_TOKEN:489915458494510c9343d9e787bd53d0
+
+https://kyfw.12306.cn/otn/confirmPassenger/confirmSingleForQueue
+passengerTicketStr:3,0,1,xx,1,dd,mmm,N
+oldPassengerStr:xx,1,dd,1_
+randCode:vkks
+purpose_codes:00
+key_check_isChange:26D1EFABE4229C44684002297B53E689954F114B9581B1F599DEB7A6
+leftTicketStr:40415500763026350574
+train_location:H3
+_json_att:
+REPEAT_SUBMIT_TOKEN:489915458494510c9343d9e787bd53d0
+
+https://kyfw.12306.cn/otn/confirmPassenger/resultOrderForDcQueue
+orderSequence_no:oorderno
+_json_att:
+REPEAT_SUBMIT_TOKEN:489915458494510c9343d9e787bd53d0
 
 
 
