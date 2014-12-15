@@ -80,5 +80,6 @@ _json_att:
 REPEAT_SUBMIT_TOKEN:489915458494510c9343d9e787bd53d0
 
 
-
+http://blog.csdn.net/chaofanwei/article/details/18769159
+http://blog.csdn.net/chaofanwei/article/details/18709415
 ticket
