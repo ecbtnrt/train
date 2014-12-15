@@ -116,7 +116,7 @@ public class Ticket {
 
 			// pre login
 			HttpUriRequest preLogin = RequestBuilder.post().setUri(new URI(preLoginURL))
-					.addParameter("loginUserDTO.user_name", "hellboy077").addParameter("userDTO.password", "wq1986119")
+					.addParameter("loginUserDTO.user_name", "").addParameter("userDTO.password", "")
 					.addParameter("randCode", check_code).addParameter("randCode_validate", "")
 					.addParameter(key, Base32.calculateParam(value, key)).addParameter("myversion", "undefined")
 					.build();
