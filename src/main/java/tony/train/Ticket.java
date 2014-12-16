@@ -35,17 +35,23 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import tony.train.handler.CheckCodeHandler;
-import tony.train.handler.LoginFormHandler;
+import tony.train.handler.DynamicJsHandler;
 import tony.train.handler.PrintResponseHandler;
+import tony.train.json.QueryLeftNewDTO;
+import tony.train.json.TicketDTO;
+import tony.train.json.TicketInfo;
 import tony.train.utils.Base32;
 
 import com.google.common.collect.Maps;
 
 public class Ticket {
 
-	private static final String root = "https://kyfw.12306.cn";
+	public static final String root = "https://kyfw.12306.cn";
+	
+	public static String value = "1111";
 
 	private static final String login = "https://kyfw.12306.cn/otn/login/init";
 	private static final String index = "https://kyfw.12306.cn/otn/";
@@ -60,29 +66,15 @@ public class Ticket {
 	private static final String indexInit = "https://kyfw.12306.cn/otn/index/init";
 
 	public final static void main(String[] args) throws Exception {
-		CloseableHttpClient httpclient = buildHttpClient();
+		final CloseableHttpClient httpclient = buildHttpClient();
 
 		PrintResponseHandler handler = new PrintResponseHandler();
-		LoginFormHandler loginHandler = new LoginFormHandler();
+		final DynamicJsHandler dynamicJshandler = new DynamicJsHandler(httpclient);
 		try {
 			goGet(httpclient, index, HttpHeader.index(), handler);
 
 			// get dynamicJS URL
-			String dynamicJsUrl = goGet(httpclient, login, HttpHeader.loginInitHearder(), loginHandler);
-
-			dynamicJsUrl = root + dynamicJsUrl;
-
-			String jsContent = doPost(httpclient, dynamicJsUrl, handler);
-
-			Pattern p = Pattern.compile("var(\\s*)key(\\s*)=(\\s*)'(\\w*)';");
-			Matcher m = p.matcher(jsContent);
-			String key = "";
-			String value = "1111";
-			if (m.find()) {
-				key = m.group();
-				key = key.split("=")[1];
-				key = key.replace("[ ]*", "").replace("'", "").replace(";", "");
-			}
+			String key = goGet(httpclient, login, HttpHeader.loginInitHearder(), dynamicJshandler);
 
 			String check_code = goGet(httpclient, getCheckCode, HttpHeader.getCheckCode(true), new CheckCodeHandler());
 
@@ -136,10 +128,71 @@ public class Ticket {
 
 			loginRsp.close();
 
-			System.out.println(goGet(httpclient, indexInit,HttpHeader.index(), handler));
+			System.out.println(goGet(httpclient, indexInit, HttpHeader.index(), handler));
+
+			// left ticket
+
+			String leftTicketUrl = "https://kyfw.12306.cn/otn/leftTicket/init";
+
+			key = goGet(httpclient, leftTicketUrl, HttpHeader.commonHeader(), dynamicJshandler);
+
+//			String ticketQueryUrl_log = "https://kyfw.12306.cn/otn/leftTicket/log?leftTicketDTO.train_date=2015-02-12&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=JMN&purpose_codes=ADULT";
+//
+//			goGet(httpclient, ticketQueryUrl_log, HttpHeader.commonHeader(), new ResponseHandler<String>() {
+//
+//				public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+//
+//					return null;
+//				}
+//
+//			});
+
+			String ticketQueryUrl = "https://kyfw.12306.cn/otn/leftTicket/queryT?leftTicketDTO.train_date=2015-02-12&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=JMN&purpose_codes=ADULT";
+
+			String secretStr = goGet(httpclient, ticketQueryUrl, HttpHeader.commonHeader(), new ResponseHandler<String>() {
+
+				public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+					ObjectMapper mapper = new ObjectMapper();
+
+					String jsonResponse = EntityUtils.toString(response.getEntity());
+
+					TicketInfo ticketInfo = mapper.readValue(jsonResponse, TicketInfo.class);
+
+					if (ticketInfo != null && ticketInfo.getHttpstatus() == 200 && ticketInfo.isStatus()) {
+
+						if (null != ticketInfo.getData() && !ticketInfo.getData().isEmpty()) {
+							// TODO
+							TicketDTO ticketDTO = ticketInfo.getData().get(0);
+							QueryLeftNewDTO queryLeftNewDTO = ticketDTO.getQueryLeftNewDTO();
+							String trainCode = queryLeftNewDTO.getStart_station_telecode();
+							if ("K253".equals(trainCode)) {
+								
+								
+								return ticketDTO.getSecretStr();
+
+							}
+						}
+					}
+
+					return null;
+				}
+
+			});
+			
+			// // submit order
+//			String secretStr = ticketDTO.getSecretStr();
+			String submitOrderUrl = "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
+			// post
+			
+			LinkedHashMap<String, String> param1 = Maps.newLinkedHashMap();
+			param.put("randCode", check_code);
+			param.put("rand", "sjrand");
+			param.put("randCode_validate", "");
 			
 			
-			
+			// order 
+			String orderInit = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
+			String key1 = goGet(httpclient, login, HttpHeader.loginInitHearder(), dynamicJshandler);
 
 		} finally {
 			httpclient.close();
@@ -181,7 +234,7 @@ public class Ticket {
 	 * @throws IOException
 	 * @throws ClientProtocolException
 	 */
-	private static String doPost(CloseableHttpClient httpclient, String url, ResponseHandler<String> handler)
+	public static String doPost(CloseableHttpClient httpclient, String url, ResponseHandler<String> handler)
 			throws IOException, ClientProtocolException {
 		HttpPost post = new HttpPost(url);
 

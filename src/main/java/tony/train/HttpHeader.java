@@ -53,6 +53,12 @@ public class HttpHeader {
 		headerMap.put(CACHECONTROL, "max-age=0");
 	}
 	
+	public static Map<String, String> commonHeader() {
+		Map<String, String> headerMap = new LinkedHashMap<String, String>();
+		commonHeader(headerMap);
+		return headerMap;
+	}
+	
 	public static Map<String, String> index() {
 		Map<String, String> headerMap = new LinkedHashMap<String, String>();
 		commonHeader(headerMap);

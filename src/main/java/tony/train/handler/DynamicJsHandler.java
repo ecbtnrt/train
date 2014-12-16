@@ -9,12 +9,28 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
-public class LoginFormHandler implements ResponseHandler<String> {
+import tony.train.Ticket;
+
+public class DynamicJsHandler implements ResponseHandler<String> {
+
+	private CloseableHttpClient httpclient;
+
+	public DynamicJsHandler() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public DynamicJsHandler(CloseableHttpClient httpclient) {
+		super();
+		this.httpclient = httpclient;
+	}
 
 	public String handleResponse(HttpResponse rsp) throws ClientProtocolException, IOException {
-		String ret = "";
+		String dynamicJsUrl = "";
+		String key = "";
 		CloseableHttpResponse response = (CloseableHttpResponse) rsp;
 		try {
 			HttpEntity entity = response.getEntity();
@@ -30,13 +46,26 @@ public class LoginFormHandler implements ResponseHandler<String> {
 			Pattern p = Pattern.compile("/otn/dynamicJs/(\\w+)");
 			Matcher m = p.matcher(s);
 			if (m.find()) {
-				ret = m.group();
+				dynamicJsUrl = m.group();
+
+				dynamicJsUrl = Ticket.root + dynamicJsUrl;
+
+				String jsContent = Ticket.doPost(httpclient, dynamicJsUrl, new PrintResponseHandler());
+
+				Pattern jsPattern = Pattern.compile("var(\\s*)key(\\s*)=(\\s*)'(\\w*)';");
+				Matcher jsMatcher = jsPattern.matcher(jsContent);
+				if (jsMatcher.find()) {
+					key = jsMatcher.group();
+					key = key.split("=")[1];
+					key = key.replace("[ ]*", "").replace("'", "").replace(";", "");
+				}
+
 			}
 
 		} finally {
 			response.close();
 		}
-		return ret;
+		return key;
 	}
 
 }
