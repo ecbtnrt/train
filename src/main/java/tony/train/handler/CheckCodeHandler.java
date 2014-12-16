@@ -28,6 +28,8 @@ public class CheckCodeHandler implements ResponseHandler<String> {
 
 			InputStream content = entity.getContent();
 
+
+			// TODO random filename
 			File code = new File("F:/code.png");
 			FileOutputStream fos = new FileOutputStream(code);
 			byte[] buffer = new byte[1024];
@@ -38,6 +40,9 @@ public class CheckCodeHandler implements ResponseHandler<String> {
 			fos.flush();
 			fos.close();
 			content.close();
+			
+			//TODO use UU cloud OCR
+			retcode = "";
 
 		} finally {
 			response.close();
