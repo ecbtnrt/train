@@ -42,7 +42,7 @@ public class CheckCodeHandler implements ResponseHandler<String> {
 			content.close();
 			
 			//TODO use UU cloud OCR
-			retcode = "";
+			retcode = UUCloud.resloveCode(code);
 
 		} finally {
 			response.close();
