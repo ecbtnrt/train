@@ -180,14 +180,22 @@ public class Ticket {
 			});
 			
 			// // submit order
-//			String secretStr = ticketDTO.getSecretStr();
 			String submitOrderUrl = "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
+			
+			LinkedHashMap<String, String> orderParam = Maps.newLinkedHashMap();
+			param.put(key, Base32.calculateParam(value, key));
+			param.put("myversion", "undefined");
+			param.put("secretStr", secretStr);
+			param.put("train_date", "2015-01-28");
+			param.put("back_train_date", "2014-12-15");
+			param.put("tour_flag", "dc");
+			param.put("purpose_codes", "ADULT");
+			param.put("query_from_station_name", "上海");
+			param.put("query_to_station_name", "武汉");
+			
+			
 			// post
 			
-			LinkedHashMap<String, String> param1 = Maps.newLinkedHashMap();
-			param.put("randCode", check_code);
-			param.put("rand", "sjrand");
-			param.put("randCode_validate", "");
 			
 			
 			// order 

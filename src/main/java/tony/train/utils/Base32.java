@@ -172,9 +172,10 @@ public class Base32 {
 	}
 
 	public static void main(String[] args) {
-		String key = "NjI2OTkz";
+		String key = "ODc5NTU0";
 		String value = "1111";
 		//NjI2OTkz : YzExNGM2OTM5MjQ0NzMzYQ==
+		// ODc5NTU0 : NzY3MDg3MzdhY2Y4N2Y4Yw==
 
 		String encrypt = encrypt(value, key);
 		System.out.println(encrypt);
