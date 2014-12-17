@@ -1,55 +1,50 @@
 package tony.train.json;
 
+import org.codehaus.jackson.annotate.JsonIgnore;
+
 public class TicketDTO {
+    QueryLeftNewDTO queryLeftNewDTO;
 
-	QueryLeftNewDTO queryLeftNewDTO;
-	String secretStr;
-	String buttonTextInfo;
+    String secretStr;
 
-	/**
-	 * @return the queryLeftNewDTO
-	 */
-	public QueryLeftNewDTO getQueryLeftNewDTO() {
-		return queryLeftNewDTO;
-	}
+    String buttonTextInfo;
 
-	/**
-	 * @param queryLeftNewDTO
-	 *            the queryLeftNewDTO to set
-	 */
-	public void setQueryLeftNewDTO(QueryLeftNewDTO queryLeftNewDTO) {
-		this.queryLeftNewDTO = queryLeftNewDTO;
-	}
+    @JsonIgnore
+    /**
+     * 3 --yw, 1--yz, 4--rw, O --erdeng, M --yideng
+     */
+    String seatType;
 
-	/**
-	 * @return the secretStr
-	 */
-	public String getSecretStr() {
-		return secretStr;
-	}
+    public QueryLeftNewDTO getQueryLeftNewDTO() {
+        return queryLeftNewDTO;
+    }
 
-	/**
-	 * @param secretStr
-	 *            the secretStr to set
-	 */
-	public void setSecretStr(String secretStr) {
-		this.secretStr = secretStr;
-	}
+    public void setQueryLeftNewDTO(QueryLeftNewDTO queryLeftNewDTO) {
+        this.queryLeftNewDTO = queryLeftNewDTO;
+    }
 
-	/**
-	 * @return the buttonTextInfo
-	 */
-	public String getButtonTextInfo() {
-		return buttonTextInfo;
-	}
+    public String getSecretStr() {
+        return secretStr;
+    }
 
-	/**
-	 * @param buttonTextInfo
-	 *            the buttonTextInfo to set
-	 */
-	public void setButtonTextInfo(String buttonTextInfo) {
-		this.buttonTextInfo = buttonTextInfo;
-	}
+    public void setSecretStr(String secretStr) {
+        this.secretStr = secretStr;
+    }
 
+    public String getButtonTextInfo() {
+        return buttonTextInfo;
+    }
+
+    public void setButtonTextInfo(String buttonTextInfo) {
+        this.buttonTextInfo = buttonTextInfo;
+    }
+
+    public String getSeatType() {
+        return seatType;
+    }
+
+    public void setSeatType(String seatType) {
+        this.seatType = seatType;
+    }
 
 }
