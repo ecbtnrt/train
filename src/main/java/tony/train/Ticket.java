@@ -14,8 +14,6 @@ import java.security.cert.CertificateException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.net.ssl.SSLContext;
 
@@ -40,17 +38,18 @@ import org.codehaus.jackson.map.ObjectMapper;
 import tony.train.handler.CheckCodeHandler;
 import tony.train.handler.DynamicJsHandler;
 import tony.train.handler.PrintResponseHandler;
+import tony.train.json.LoginResonse;
 import tony.train.json.QueryLeftNewDTO;
 import tony.train.json.TicketDTO;
 import tony.train.json.TicketInfo;
-import tony.train.utils.Base32;
+import tony.train.utils.PropertiesUtil;
 
 import com.google.common.collect.Maps;
 
 public class Ticket {
 
 	public static final String root = "https://kyfw.12306.cn";
-	
+
 	public static String value = "1111";
 
 	private static final String login = "https://kyfw.12306.cn/otn/login/init";
@@ -63,148 +62,191 @@ public class Ticket {
 	private static final String preLoginURL = "https://kyfw.12306.cn/otn/login/loginAysnSuggest";
 	private static final String LoginURL = "https://kyfw.12306.cn/otn/login/userLogin";
 
-	private static final String indexInit = "https://kyfw.12306.cn/otn/index/init";
+	// private static final String indexInit = "https://kyfw.12306.cn/otn/index/init";
 
 	public final static void main(String[] args) throws Exception {
 		final CloseableHttpClient httpclient = buildHttpClient();
 
-		PrintResponseHandler handler = new PrintResponseHandler();
 		final DynamicJsHandler dynamicJshandler = new DynamicJsHandler(httpclient);
 		try {
-			goGet(httpclient, index, HttpHeader.index(), handler);
 
-			// get dynamicJS URL
-			String key = goGet(httpclient, login, HttpHeader.loginInitHearder(), dynamicJshandler);
+			login(httpclient);
 
-			String check_code = goGet(httpclient, getCheckCode, HttpHeader.getCheckCode(true), new CheckCodeHandler());
-
-			LinkedHashMap<String, String> param = Maps.newLinkedHashMap();
-			param.put("randCode", check_code);
-			param.put("rand", "sjrand");
-			param.put("randCode_validate", "");
-
-			doPostWithParam(httpclient, checkcodeVerify, HttpHeader.postCheckCode(true), param,
-					new ResponseHandler<String>() {
-
-						public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-							try {
-								HttpEntity entity = response.getEntity();
-
-								System.out.println("Login form get: " + response.getStatusLine());
-
-								String str = EntityUtils.toString(entity);
-								if (null != str && str.contains("randCodeRight")) {
-									System.out.println("verify success");
-									return "Y";
-								} else {
-									System.err.println("验证码错误!");
-									return "N";
-								}
-							} finally {
-								((CloseableHttpResponse) response).close();
-							}
-						}
-					});
-
-			// pre login
-			HttpUriRequest preLogin = RequestBuilder.post().setUri(new URI(preLoginURL))
-					.addParameter("loginUserDTO.user_name", "").addParameter("userDTO.password", "")
-					.addParameter("randCode", check_code).addParameter("randCode_validate", "")
-					.addParameter(key, Base32.calculateParam(value, key)).addParameter("myversion", "undefined")
-					.build();
-
-			CloseableHttpResponse rsp3 = httpclient.execute(preLogin);
-			System.out.println(EntityUtils.toString(rsp3.getEntity()));
-			rsp3 = httpclient.execute(preLogin);
-			System.out.println(EntityUtils.toString(rsp3.getEntity()));
-
-			rsp3.close();
-
-			HttpUriRequest loginReq = RequestBuilder.post().setUri(new URI(LoginURL)).addParameter("_json_att", "")
-					.build();
-
-			CloseableHttpResponse loginRsp = httpclient.execute(loginReq);
-			System.out.println(EntityUtils.toString(loginRsp.getEntity()));
-
-			loginRsp.close();
-
-			System.out.println(goGet(httpclient, indexInit, HttpHeader.index(), handler));
+			// System.out.println(goGet(httpclient, indexInit, HttpHeader.index(), handler));
 
 			// left ticket
 
-			String leftTicketUrl = "https://kyfw.12306.cn/otn/leftTicket/init";
+			//String leftTicketUrl = "https://kyfw.12306.cn/otn/leftTicket/init";
 
-			key = goGet(httpclient, leftTicketUrl, HttpHeader.commonHeader(), dynamicJshandler);
+			// key = goGet(httpclient, leftTicketUrl, HttpHeader.commonHeader(),
+			// dynamicJshandler);
 
-//			String ticketQueryUrl_log = "https://kyfw.12306.cn/otn/leftTicket/log?leftTicketDTO.train_date=2015-02-12&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=JMN&purpose_codes=ADULT";
-//
-//			goGet(httpclient, ticketQueryUrl_log, HttpHeader.commonHeader(), new ResponseHandler<String>() {
-//
-//				public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-//
-//					return null;
-//				}
-//
-//			});
-
+			StringBuilder sb = new StringBuilder();
+			// host
+			// TODO : use different server to get latest data
+			sb.append(root);
+			sb.append("otn/leftTicket/queryT?");
+			sb.append("leftTicketDTO.train_date=");
+			
+			
+			// https://kyfw.12306.cn/otn/leftTicket/queryT?leftTicketDTO.train_date=2015-02-13&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=XAY&purpose_codes=ADULT
+			
+			
+			
 			String ticketQueryUrl = "https://kyfw.12306.cn/otn/leftTicket/queryT?leftTicketDTO.train_date=2015-02-12&leftTicketDTO.from_station=SHH&leftTicketDTO.to_station=JMN&purpose_codes=ADULT";
 
-			String secretStr = goGet(httpclient, ticketQueryUrl, HttpHeader.commonHeader(), new ResponseHandler<String>() {
+			String secretStr = goGet(httpclient, ticketQueryUrl, HttpHeader.commonHeader(),
+					new ResponseHandler<String>() {
 
-				public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-					ObjectMapper mapper = new ObjectMapper();
+						public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+							ObjectMapper mapper = new ObjectMapper();
 
-					String jsonResponse = EntityUtils.toString(response.getEntity());
+							String jsonResponse = EntityUtils.toString(response.getEntity());
 
-					TicketInfo ticketInfo = mapper.readValue(jsonResponse, TicketInfo.class);
+							TicketInfo ticketInfo = mapper.readValue(jsonResponse, TicketInfo.class);
 
-					if (ticketInfo != null && ticketInfo.getHttpstatus() == 200 && ticketInfo.isStatus()) {
+							if (ticketInfo != null && ticketInfo.getHttpstatus() == 200 && ticketInfo.isStatus()) {
 
-						if (null != ticketInfo.getData() && !ticketInfo.getData().isEmpty()) {
-							// TODO
-							TicketDTO ticketDTO = ticketInfo.getData().get(0);
-							QueryLeftNewDTO queryLeftNewDTO = ticketDTO.getQueryLeftNewDTO();
-							String trainCode = queryLeftNewDTO.getStart_station_telecode();
-							if ("K253".equals(trainCode)) {
-								
-								
-								return ticketDTO.getSecretStr();
+								if (null != ticketInfo.getData() && !ticketInfo.getData().isEmpty()) {
+									// TODO
+									TicketDTO ticketDTO = ticketInfo.getData().get(0);
+									QueryLeftNewDTO queryLeftNewDTO = ticketDTO.getQueryLeftNewDTO();
+									String trainCode = queryLeftNewDTO.getStation_train_code();
+									if ("K253".equals(trainCode)) {
 
+										return ticketDTO.getSecretStr();
+
+									}
+								}
 							}
+
+							return null;
 						}
-					}
 
-					return null;
-				}
+					});
 
-			});
-			
 			// // submit order
 			String submitOrderUrl = "https://kyfw.12306.cn/otn/leftTicket/submitOrderRequest";
-			
+
 			LinkedHashMap<String, String> orderParam = Maps.newLinkedHashMap();
-			param.put(key, Base32.calculateParam(value, key));
-			param.put("myversion", "undefined");
-			param.put("secretStr", secretStr);
-			param.put("train_date", "2015-01-28");
-			param.put("back_train_date", "2014-12-15");
-			param.put("tour_flag", "dc");
-			param.put("purpose_codes", "ADULT");
-			param.put("query_from_station_name", "上海");
-			param.put("query_to_station_name", "武汉");
-			
-			
+			// orderParam.put(key, Base32.calculateParam(value, key));
+			orderParam.put("myversion", "undefined");
+			orderParam.put("secretStr", secretStr);
+			orderParam.put("train_date", "2015-01-28");
+			orderParam.put("back_train_date", "2014-12-15");
+			orderParam.put("tour_flag", "dc");
+			orderParam.put("purpose_codes", "ADULT");
+			orderParam.put("query_from_station_name", "上海");
+			orderParam.put("query_to_station_name", "武汉");
+
 			// post
-			
-			
-			
-			// order 
+
+			// order
 			String orderInit = "https://kyfw.12306.cn/otn/confirmPassenger/initDc";
 			String key1 = goGet(httpclient, login, HttpHeader.loginInitHearder(), dynamicJshandler);
 
 		} finally {
 			httpclient.close();
 		}
+	}
+
+	/**
+	 * 
+	 * @param httpclient
+	 * @return
+	 * @throws ClientProtocolException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public static boolean login(CloseableHttpClient httpclient) throws ClientProtocolException, IOException,
+			URISyntaxException {
+		PrintResponseHandler handler = new PrintResponseHandler();
+		// DynamicJsHandler dynamicJshandler = new DynamicJsHandler(httpclient);
+
+		boolean islogin = false;
+
+		do {
+			// get index page
+			goGet(httpclient, index, HttpHeader.index(), handler);
+
+			// get dynamicJS URL
+			// String key = goGet(httpclient, login,
+			// HttpHeader.loginInitHearder(), dynamicJshandler);
+			String checkCodeVerifyResult = "N";
+			String check_code = "";
+			do {
+				check_code = goGet(httpclient, getCheckCode, HttpHeader.getCheckCode(true), new CheckCodeHandler());
+				System.out.println("验证码为：" + check_code);
+
+				LinkedHashMap<String, String> param = Maps.newLinkedHashMap();
+				param.put("randCode", check_code);
+				param.put("rand", "sjrand");
+				param.put("randCode_validate", "");
+
+				checkCodeVerifyResult = doPostWithParam(httpclient, checkcodeVerify, HttpHeader.postCheckCode(true),
+						param, new ResponseHandler<String>() {
+
+							public String handleResponse(HttpResponse response) throws ClientProtocolException,
+									IOException {
+								try {
+									HttpEntity entity = response.getEntity();
+
+									System.out.println("Login form get: " + response.getStatusLine());
+
+									String str = EntityUtils.toString(entity);
+									if (null != str && str.contains("randCodeRight")) {
+										System.out.println("登陆验证码正确,准备开始登陆...");
+										return "Y";
+									} else {
+										System.err.println("验证码错误,重新获取验证码...");
+										return "N";
+									}
+								} finally {
+									((CloseableHttpResponse) response).close();
+								}
+							}
+						});
+
+			} while ("N".equals(checkCodeVerifyResult));
+
+			System.out.println("开始登陆...");
+			HttpUriRequest preLogin = RequestBuilder.post().setUri(new URI(preLoginURL))
+					.addParameter("loginUserDTO.user_name", PropertiesUtil.getValue("username"))
+					.addParameter("userDTO.password", PropertiesUtil.getValue("pwd"))
+					.addParameter("randCode", check_code).addParameter("randCode_validate", "")
+					// .addParameter(key, Base32.calculateParam(value,key))
+					// .addParameter("myversion", "undefined")
+					.build();
+
+			CloseableHttpResponse response = httpclient.execute(preLogin);
+			String loginRsp = EntityUtils.toString(response.getEntity());
+			// {"validateMessagesShowId":"_validatorMessage","status":true,"httpstatus":200,"data":{"loginCheck":"Y"},"messages":[],"validateMessages":{}}
+
+			System.out.println(loginRsp);
+
+			ObjectMapper mapper = new ObjectMapper();
+			LoginResonse loginResponse = mapper.readValue(loginRsp, LoginResonse.class);
+
+			if (null != loginResponse && "Y".equalsIgnoreCase(loginResponse.getData().getLoginCheck())) {
+				// System.out.println("登陆成功!");
+
+				// final step
+				HttpUriRequest loginReq = RequestBuilder.post().setUri(new URI(LoginURL)).addParameter("_json_att", "")
+						.build();
+
+				CloseableHttpResponse r = httpclient.execute(loginReq);
+				System.out.println(EntityUtils.toString(r.getEntity()));
+
+				r.close();
+
+				islogin = true;
+			}
+
+		} while (!islogin);
+
+		System.out.println("登陆成功...");
+
+		return true;
 	}
 
 	/**

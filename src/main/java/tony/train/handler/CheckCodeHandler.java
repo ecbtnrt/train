@@ -28,6 +28,7 @@ public class CheckCodeHandler implements ResponseHandler<String> {
 
 			InputStream content = entity.getContent();
 
+			// TODO random file name
 			File code = new File("F:/code.png");
 			FileOutputStream fos = new FileOutputStream(code);
 			byte[] buffer = new byte[1024];
@@ -38,6 +39,10 @@ public class CheckCodeHandler implements ResponseHandler<String> {
 			fos.flush();
 			fos.close();
 			content.close();
+			
+			
+			// TODO get check code value
+			retcode  = "";
 
 		} finally {
 			response.close();
