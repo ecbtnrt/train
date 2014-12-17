@@ -55,9 +55,10 @@ public class DynamicJsHandler implements ResponseHandler<String> {
 				Pattern jsPattern = Pattern.compile("var(\\s*)key(\\s*)=(\\s*)'(\\w*)';");
 				Matcher jsMatcher = jsPattern.matcher(jsContent);
 				if (jsMatcher.find()) {
-					key = jsMatcher.group();
-					key = key.split("=")[1];
-					key = key.replace("[ ]*", "").replace("'", "").replace(";", "");
+				//	key = jsMatcher.group();
+					key = jsMatcher.group(4);
+				//	key = key.split("=")[1];
+				//	key = key.replace("[ ]*", "").replace("'", "").replace(";", "");
 				}
 
 			}

@@ -1,0 +1,8 @@
+public class UUCloud {
+  
+  public static tring resloveCode(File f) {
+    // TODO
+    return "";
+  }
+
+}
