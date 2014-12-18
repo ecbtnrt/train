@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 
 import tony.train.Ticket;
+import tony.train.utils.HttpUtil;
 
 public class DynamicJsHandler implements ResponseHandler<String> {
 
@@ -50,7 +51,7 @@ public class DynamicJsHandler implements ResponseHandler<String> {
 
 				dynamicJsUrl = Ticket.root + dynamicJsUrl;
 
-				String jsContent = Ticket.doPost(httpclient, dynamicJsUrl, new PrintResponseHandler());
+				String jsContent = HttpUtil.doPost(httpclient, dynamicJsUrl, new PrintResponseHandler());
 
 				Pattern jsPattern = Pattern.compile("var(\\s*)key(\\s*)=(\\s*)'(\\w*)';");
 				Matcher jsMatcher = jsPattern.matcher(jsContent);

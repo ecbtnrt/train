@@ -29,8 +29,17 @@ public class PropertiesUtil {
 			return "";
 		}
 	}
-	
+
+	public static int getIntValue(String key, int defaultValue) {
+		String value = getValue(key);
+		try {
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
 	public static void main(String[] args) {
-		//System.out.println(PropertiesUtil.getValue("pwd"));
+		// System.out.println(PropertiesUtil.getValue("pwd"));
 	}
 }
